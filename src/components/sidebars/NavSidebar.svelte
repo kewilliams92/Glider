@@ -33,7 +33,7 @@
                                 >
                                     <div class="flex-it">
                                         <div class="icon">
-                                            <svelte:component this={link.icon} /> // we use svelte:component to render the icon
+                                            <svelte:component this={link.icon} /> <!--we can use svelte:component to dynamically render the icon-->
                                         </div>
                                     </div>
                                     <div class="mx-4 text-2xl truncate xl:block hidden">
