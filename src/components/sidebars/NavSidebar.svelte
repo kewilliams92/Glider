@@ -8,7 +8,6 @@
 
     import { navLinks } from './navLinks'
 
-    console.log(navLinks)
 </script>
 
 <header class="lg:flex-grow flex-it items-end">
