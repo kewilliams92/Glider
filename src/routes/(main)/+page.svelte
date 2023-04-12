@@ -1,7 +1,7 @@
 <script>
 	
 	import TiImageOutline from 'svelte-icons/ti/TiImageOutline.svelte';
-	import GlidePost from '../components/glides/GlidePost.svelte';
+	import GlidePost from '../../components/glides/GlidePost.svelte';
 
 	let glides = []
 	let glideContent = ""
