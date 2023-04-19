@@ -7,7 +7,7 @@
 	let isLoading = writable(true);
 	let isAuthenticated = writable(false, (set) => {
 		setTimeout(() => {
-			set(true); // isAuthenticated setter
+			set(false); // isAuthenticated setter
 			$isLoading = false;
 		}, 2000);
 	});

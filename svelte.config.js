@@ -11,6 +11,8 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			"@components": "./src/components/*",
+			"@actions": "./src/actions/*",
+			"@stores": "./src/stores/*",
 		}
 	},
 	preprocess: vitePreprocess()
