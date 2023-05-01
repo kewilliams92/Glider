@@ -1,7 +1,8 @@
 <script>
-    import { createFormStore } from "@stores/formHandler";
+    import { createFormStore, maxLengthValidator, firstUppercaseLetter } from "@stores/createFormStore";
+	import FormErrors from "./FormErrors.svelte";
     
-    const { validate, form  } = createFormStore({
+    const { validate, form, errors  } = createFormStore({
 		fullName: "",
         nickName: "",
         email: "",
@@ -15,6 +16,7 @@
     }
 </script>
 
+
 <form class="flex-it">
 	<div class="flex-it overflow-hidden sm:rounded-md">
 		<div class="flex-it">
@@ -23,34 +25,33 @@
 					<label for="fullName" class="block text-sm font-medium text-gray-700"> Full Name </label>
 					<input
                         bind:value={$form.fullName}
-                        use:validate={[1]}
+                        use:validate={[maxLengthValidator, firstUppercaseLetter]}
 						type="text"
 						name="fullName"
 						id="fullName"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
-					<div class="flex-it grow text-xs bg-red-400 text-white p-3 pl-3 mt-1 rounded-md">
-						Error Error Beep Beep!
-					</div>
+					<FormErrors errors={$errors.fullName} />
 				</div>
 
 				<div class="flex-it py-2">
 					<label for="nickName" class="block text-sm font-medium text-gray-700"> Nick Name </label>
 					<input
                         bind:value={$form.nickName}
-                        use:validate={[2]}
+                        use:validate={[maxLengthValidator, firstUppercaseLetter]}
 						type="text"
 						name="nickName"
 						id="nickName"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
+					<FormErrors errors={$errors.nickName} />
 				</div>
 
 				<div class="flex-it py-2">
 					<label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
 					<input
                         bind:value={$form.email}
-                        use:validate={[3]}
+                        use:validate
 						type="text"
 						name="email"
 						id="email"
@@ -62,7 +63,7 @@
 					<label for="avatar" class="block text-sm font-medium text-gray-700"> Avatar </label>
 					<input
                         bind:value={$form.avatar}
-                        use:validate={[4]}
+                        use:validate
 						type="text"
 						name="avatar"
 						id="avatar"
@@ -74,7 +75,7 @@
 					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
 					<input
                         bind:value={$form.password}
-                        use:validate={[5]}
+                        use:validate
 						type="password"
 						name="password"
 						id="password"
@@ -88,7 +89,7 @@
 					</label>
 					<input
                         bind:value={$form.passwordConfirmation}
-                        use:validate={[6]}
+                        use:validate
 						type="password"
 						name="passwordConfirmation"
 						id="passwordConfirmation"
