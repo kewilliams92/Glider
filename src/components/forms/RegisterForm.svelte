@@ -1,21 +1,26 @@
 <script>
-    import { createFormStore, maxLengthValidator, firstUppercaseLetter } from "@stores/createFormStore";
-	import FormErrors from "./FormErrors.svelte";
-    
-    const { validate, form, errors  } = createFormStore({
-		fullName: "",
-        nickName: "",
-        email: "",
-        avatar: "",
-        password: "",
-        passwordConfirmation: ""
+	import {
+		createFormStore,
+		maxLengthValidator,
+		firstUppercaseLetter,
+		requiredValidator,
+		minLengthValidator
+	} from '@stores/createFormStore';
+	import FormErrors from './FormErrors.svelte';
+
+	const { validate, form, errors } = createFormStore({
+		fullName: '',
+		nickName: '',
+		email: '',
+		avatar: '',
+		password: '',
+		passwordConfirmation: ''
 	});
 
-    function submitRegisterForm(){
-        alert(JSON.stringify($form))
-    }
+	function submitRegisterForm() {
+		alert(JSON.stringify($form));
+	}
 </script>
-
 
 <form class="flex-it">
 	<div class="flex-it overflow-hidden sm:rounded-md">
@@ -24,8 +29,12 @@
 				<div class="flex-it py-2">
 					<label for="fullName" class="block text-sm font-medium text-gray-700"> Full Name </label>
 					<input
-                        bind:value={$form.fullName}
-                        use:validate={[maxLengthValidator, firstUppercaseLetter]}
+						bind:value={$form.fullName}
+						use:validate={[
+						requiredValidator, 
+						(ele) => minLengthValidator(ele, 5),
+						firstUppercaseLetter
+						]}
 						type="text"
 						name="fullName"
 						id="fullName"
@@ -37,8 +46,11 @@
 				<div class="flex-it py-2">
 					<label for="nickName" class="block text-sm font-medium text-gray-700"> Nick Name </label>
 					<input
-                        bind:value={$form.nickName}
-                        use:validate={[maxLengthValidator, firstUppercaseLetter]}
+						bind:value={$form.nickName}
+						use:validate={[
+						requiredValidator, 
+						(ele) => minLengthValidator(ele, 3)
+						]}
 						type="text"
 						name="nickName"
 						id="nickName"
@@ -50,37 +62,40 @@
 				<div class="flex-it py-2">
 					<label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
 					<input
-                        bind:value={$form.email}
-                        use:validate
+						bind:value={$form.email}
+						use:validate={[requiredValidator]}
 						type="text"
 						name="email"
 						id="email"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
+					<FormErrors errors={$errors.email} />
 				</div>
 
 				<div class="flex-it py-2">
 					<label for="avatar" class="block text-sm font-medium text-gray-700"> Avatar </label>
 					<input
-                        bind:value={$form.avatar}
-                        use:validate
+						bind:value={$form.avatar}
+						use:validate={[requiredValidator]}
 						type="text"
 						name="avatar"
 						id="avatar"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
+					<FormErrors errors={$errors.avatar} />
 				</div>
 
 				<div class="flex-it py-2">
 					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
 					<input
-                        bind:value={$form.password}
-                        use:validate
+						bind:value={$form.password}
+						use:validate={[requiredValidator]}
 						type="password"
 						name="password"
 						id="password"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
+					<FormErrors errors={$errors.password} />
 				</div>
 
 				<div class="flex-it py-2">
@@ -88,13 +103,14 @@
 						Password Confirmation
 					</label>
 					<input
-                        bind:value={$form.passwordConfirmation}
-                        use:validate
+						bind:value={$form.passwordConfirmation}
+						use:validate={[requiredValidator]}
 						type="password"
 						name="passwordConfirmation"
 						id="passwordConfirmation"
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
 					/>
+					<FormErrors errors={$errors.passwordConfirmation} />
 				</div>
 			</div>
 		</div>
@@ -104,7 +120,7 @@
 		</div>
 		<div class="flex-it py-2">
 			<button
-                on:click={submitRegisterForm}
+				on:click={submitRegisterForm}
 				type="button"
 				class="
                 bg-blue-400 hover:bg-blue-500 focus:ring-0

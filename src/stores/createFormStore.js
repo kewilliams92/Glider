@@ -34,11 +34,34 @@ export function createFormStore(initialData) {
 	};
 }
 
+//Allows our error messages to be more readable
+function niceName(text){
+	const words = text.split(/(?=[A-Z])/); //Split the string into words
+
+	return (words.map((word, i) => {
+		if(i === 0){
+			return word[0].toUpperCase() + word.substring(1);//Capitalize the first word
+		}
+		return word.toLowerCase();
+	})).join(" ");
+}
+
+export function requiredValidator({ value, name }) {
+    return value.length === 0 ? `${niceName(name)} is required` : "";
+}
+
+export function minLengthValidator(element, minLength = 7) {
+	if (element.value.length === 0 || element.value.length < minLength) {
+		return '';
+	}
+	return `${niceName(element.name)} should be more than ${minLength} characters`;
+}
+
 export function maxLengthValidator(element, maxLength = 7) {
 	if (element.value.length === 0 || element.value.length < maxLength) {
 		return '';
 	}
-	return `${element.name} should be less than ${maxLength} characters`;
+	return `${niceName(element.name)} should be less than ${maxLength} characters`;
 }
 
 export function firstUppercaseLetter({ value }) {
@@ -46,5 +69,5 @@ export function firstUppercaseLetter({ value }) {
 		return '';
 	}
 
-	return value[0] === value[0].toUpperCase() ? '' : `${name} first letter should be uppercase`;
+	return value[0] === value[0].toUpperCase() ? '' : `${niceName(name)} first letter should be uppercase`;
 }
