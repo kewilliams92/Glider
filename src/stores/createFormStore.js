@@ -97,12 +97,12 @@ export const compareWithValidator = (element, compareToFieldName) => (form) => {
 }
 
 // export function sameAs(element){}
-export const requiredValidator = ({ value, name }) => (form) => {
+export const requiredValidator = ({ value, name }) => () => {
     return value.length === 0 ? `${niceName(name)} is required` : "";
 }
 
 export const minLengthValidator = (element, minLength = 7) => () => {
-	if (element.value.length === 0 || element.value.length < minLength) {
+	if (element.value.length === 0 || element.value.length > minLength) {
 		return '';
 	}
 	return `${niceName(element.name)} should be more than ${minLength} characters`;
@@ -115,7 +115,7 @@ export const maxLengthValidator = (element, maxLength = 7) => () => {
 	return `${niceName(element.name)} should be less than ${maxLength} characters`;
 }
 
-export const firstUppercaseLetter = ({ value }) => () => {
+export const firstUppercaseLetter = ({ value, name }) => () => {
 	if (value.length === 0) {
 		return '';
 	}
