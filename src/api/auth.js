@@ -1,7 +1,17 @@
 import { firebaseAuth, db } from "@db/index"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword ,signOut } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
 
+
+function logoutUser(){
+    //we will call here firebase auth and we will logout user
+    return signOut(firebaseAuth);
+}
+
+function loginUser(form){
+    //we will call here firebase auth and we will login user
+    return signInWithEmailAndPassword(firebaseAuth, form.email, form.password)
+}
 
 async function registerUser(form){
     //we will call here firebase auth and we will register user
@@ -24,4 +34,4 @@ async function registerUser(form){
     return registeredUser;
 }
 
-export { registerUser }
+export { registerUser, logoutUser, loginUser }
