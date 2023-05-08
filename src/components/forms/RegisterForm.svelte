@@ -1,14 +1,14 @@
 <script>
 	import {
 		createFormStore,
-		maxLengthValidator,
 		firstUppercaseLetter,
 		requiredValidator,
-		minLengthValidator
+		minLengthValidator,
+		compareWithValidator
 	} from '@stores/createFormStore';
 	import FormErrors from './FormErrors.svelte';
 
-	const { validate, form, errors } = createFormStore({
+	const { validate, setValue, submitForm, errors } = createFormStore({
 		fullName: '',
 		nickName: '',
 		email: '',
@@ -17,8 +17,8 @@
 		passwordConfirmation: ''
 	});
 
-	function submitRegisterForm() {
-		alert(JSON.stringify($form));
+	function handleFormSubmit(formData) {
+		alert(JSON.stringify(formData));
 	}
 </script>
 
@@ -29,7 +29,7 @@
 				<div class="flex-it py-2">
 					<label for="fullName" class="block text-sm font-medium text-gray-700"> Full Name </label>
 					<input
-						bind:value={$form.fullName}
+					on:input={setValue}
 						use:validate={[
 						requiredValidator, 
 						(ele) => minLengthValidator(ele, 5),
@@ -46,7 +46,7 @@
 				<div class="flex-it py-2">
 					<label for="nickName" class="block text-sm font-medium text-gray-700"> Nick Name </label>
 					<input
-						bind:value={$form.nickName}
+					on:input={setValue}
 						use:validate={[
 						requiredValidator, 
 						(ele) => minLengthValidator(ele, 3)
@@ -62,7 +62,7 @@
 				<div class="flex-it py-2">
 					<label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
 					<input
-						bind:value={$form.email}
+					on:input={setValue}
 						use:validate={[requiredValidator]}
 						type="text"
 						name="email"
@@ -75,7 +75,7 @@
 				<div class="flex-it py-2">
 					<label for="avatar" class="block text-sm font-medium text-gray-700"> Avatar </label>
 					<input
-						bind:value={$form.avatar}
+					on:input={setValue}
 						use:validate={[requiredValidator]}
 						type="text"
 						name="avatar"
@@ -88,7 +88,7 @@
 				<div class="flex-it py-2">
 					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
 					<input
-						bind:value={$form.password}
+					on:input={setValue}
 						use:validate={[requiredValidator]}
 						type="password"
 						name="password"
@@ -103,8 +103,11 @@
 						Password Confirmation
 					</label>
 					<input
-						bind:value={$form.passwordConfirmation}
-						use:validate={[requiredValidator]}
+					on:input={setValue}
+						use:validate={[
+							requiredValidator,
+							(ele) => compareWithValidator(ele, "password")
+							]}
 						type="password"
 						name="passwordConfirmation"
 						id="passwordConfirmation"
@@ -120,7 +123,7 @@
 		</div>
 		<div class="flex-it py-2">
 			<button
-				on:click={submitRegisterForm}
+				on:click={submitForm(handleFormSubmit)}
 				type="button"
 				class="
                 bg-blue-400 hover:bg-blue-500 focus:ring-0

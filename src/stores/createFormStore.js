@@ -1,22 +1,46 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export function createFormStore(initialData) {
 	const form = writable({ initialData });
 	const errors = writable({});
 
+	const validatorFields = {}
+
 	function validate(node, validators = []) {
-		node.onblur = checkValidity(node, validators);
+		let config;
+		validatorFields[node.name] = config = {element: node, validators};
+		node.onblur = checkValidity(config);
+		node.oninput = () => {
+			if(!get(errors)[node.name] ){
+				return;
+			}
+			 checkValidity(config)();
+		};
+	}
+
+	function isValid(){
+		const _errors = get(errors);
+		const keys = Object.keys(_errors);
+
+		if(keys.length === 0){
+			return false;
+		}
+
+		return keys.every((errorKey) => {
+			//If the error array is empty, then the field is valid
+			return _errors[errorKey].length === 0;
+			});
 	}
 
 	//This function is used to check if the form is valid
-	const checkValidity = (element, validators) => () => {
+	const checkValidity = ({element, validators}) => () => {
 		errors.update((_errors) => {
 			_errors[element.name] = [];
 			return _errors;
 		});
 
 		for (const validator of validators) {
-			const errorMessage = validator(element);
+			const errorMessage = validator(element)(get(form));
 
 			if (errorMessage) {
 				errors.update((_errors) => {
@@ -27,10 +51,28 @@ export function createFormStore(initialData) {
 		}
 	};
 
+	const submitForm = (callback) => () => {
+		for(const field in validatorFields){
+			const config = validatorFields[field];
+			checkValidity(config)();
+		}
+
+		if(isValid()){
+		callback(get(form));
+		}
+	}
+
 	return {
 		validate,
-		form,
-		errors: { subscribe: errors.subscribe }
+		errors: { subscribe: errors.subscribe },
+		submitForm,
+		setValue:(e) => {
+			const { value, name } = e.target;
+			form.update((_form) => {
+				_form[name] = value;
+				return _form;
+				});
+		}
 	};
 }
 
@@ -46,25 +88,34 @@ function niceName(text){
 	})).join(" ");
 }
 
-export function requiredValidator({ value, name }) {
+export const compareWithValidator = (element, compareToFieldName) => (form) => {
+	if(element.value.length === 0){return ''}
+
+	const compareToValue = form[compareToFieldName];
+
+	return element.value === compareToValue ? '' : `${niceName(element.name)} should be the same as ${niceName(compareToFieldName)}`;
+}
+
+// export function sameAs(element){}
+export const requiredValidator = ({ value, name }) => (form) => {
     return value.length === 0 ? `${niceName(name)} is required` : "";
 }
 
-export function minLengthValidator(element, minLength = 7) {
+export const minLengthValidator = (element, minLength = 7) => () => {
 	if (element.value.length === 0 || element.value.length < minLength) {
 		return '';
 	}
 	return `${niceName(element.name)} should be more than ${minLength} characters`;
 }
 
-export function maxLengthValidator(element, maxLength = 7) {
+export const maxLengthValidator = (element, maxLength = 7) => () => {
 	if (element.value.length === 0 || element.value.length < maxLength) {
 		return '';
 	}
 	return `${niceName(element.name)} should be less than ${maxLength} characters`;
 }
 
-export function firstUppercaseLetter({ value }) {
+export const firstUppercaseLetter = ({ value }) => () => {
 	if (value.length === 0) {
 		return '';
 	}
