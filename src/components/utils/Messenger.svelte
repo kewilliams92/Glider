@@ -1,35 +1,60 @@
 <script>
+	import { createGlide } from '@api/glides';
 	import { getUIContext } from '@components/context/UI';
 	import { getAuthContext } from '@components/context/auth';
-    	import TiImageOutline from 'svelte-icons/ti/TiImageOutline.svelte';
-       
-        const { auth } = getAuthContext()
-		const { addSnackbar } = getUIContext()
-       
-        let glideContent = '';
+	import TiImageOutline from 'svelte-icons/ti/TiImageOutline.svelte';
 
-        $: user = $auth?.user;
-        function createGlide(){
-        console.log('should create glide')
-		addSnackbar('Glide created', 'success')
+	const { auth } = getAuthContext();
+	const { addSnackbar } = getUIContext();
+
+	export let onGlidePosted;
+
+	let form = { content: ""};
+	let loading = false;
+
+	$: user = $auth?.user; //get user from auth store
+	$: sendDisabled = loading || form.content === ""; //disable send button if loading or no content
+
+	async function submitGlide() {
+		loading = true;
+
+		//making requests to store the glide to firestore
+		const glideData = {
+			...form,
+			uid: user.uid,
+		}
+
+		//try/catch block to catch errors
+		try{
+		//our firestore api for creating a glide
+		const glide = await createGlide(glideData);
+		const userData ={
+			nickName: user.nickName,
+			avatar: user.avatar,
+		}
+		//Inform page that glide has been added and insert it into the glide array in store
+		onGlidePosted({...glide, user: userData});
+		addSnackbar('Glide created', 'success');
+		form.content = "";
+		}catch(e){
+			addSnackbar(e.message, 'error');
+		} finally {
+			loading = false;
+		}
 	}
 </script>
 
 <div class="flex-it py-1 px-4 flex-row">
 	<div class="flex-it mr-4">
 		<div class="w-12 h-12 overflow-visible cursor-pointer transition duration-200 hover:opacity-80">
-			<img
-				alt=""
-				class="rounded-full"
-				src={user?.avatar}
-			/>
+			<img alt="" class="rounded-full" src={user?.avatar} />
 		</div>
 	</div>
 	<!-- MESSENGER START -->
 	<div class="flex-it flex-grow">
 		<div class="flex-it">
 			<textarea
-			bind:value={glideContent}
+				bind:value={form.content}
 				name="content"
 				rows="1"
 				id="glide"
@@ -48,7 +73,8 @@
 			</div>
 			<div class="flex-it w-32 mt-3 cursor-pointer">
 				<button
-					on:click={createGlide}
+					on:click={submitGlide}
+					disabled={sendDisabled}
 					type="button"
 					class="disabled:cursor-not-allowed disabled:bg-gray-400 bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full flex-it transition duration-200"
 				>
