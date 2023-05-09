@@ -2,10 +2,12 @@
 	import { getAuthContext } from "@components/context/auth";
     import { goto } from "$app/navigation";
 
-    const { auth } = getAuthContext()
+    const { auth } = getAuthContext();
 
-    if($auth.isAuthenticated){
-        goto('/')
+    $: {
+        if($auth.isAuthenticated){
+            goto('/')
+        }
     }
 </script>
 

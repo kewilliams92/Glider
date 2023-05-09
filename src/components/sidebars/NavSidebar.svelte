@@ -4,8 +4,15 @@
 	import { navLinks } from './navLinks';
 	import Popup from '@components/utils/Popup.svelte';
 	import { getUIContext } from '@components/context/UI';
+	import { getAuthContext } from '@components/context/auth';
 
-	const {isXl} = getUIContext()
+	const {isXl} = getUIContext();
+	const { auth } = getAuthContext();
+
+	let user;
+
+	$: user = $auth?.user;
+
 </script>
 
 <header class="lg:flex-grow flex-it items-end">
@@ -69,12 +76,12 @@
 									<img
 										alt=""
 										class="rounded-full"
-										src="https://www.pinclipart.com/picdir/middle/133-1331433_free-user-avatar-icons-happy-flat-design-png.png"
+										src={user?.avatar}
 									/>
 								</div>
 							</div>
 							<div class="flex-it xl:flex hidden flex-grow flex-row justify-between items-center">
-								<div class="flex-it mx-3 font-bold">Filip99</div>
+								<div class="flex-it mx-3 font-bold">{user.nickName}</div>
 								<div class="flex-it">
 									<div class="icon">
 										<TiSocialFlickr />

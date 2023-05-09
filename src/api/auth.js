@@ -8,9 +8,10 @@ function logoutUser(){
     return signOut(firebaseAuth);
 }
 
-function loginUser(form){
+async function loginUser(form){
     //we will call here firebase auth and we will login user
-    return signInWithEmailAndPassword(firebaseAuth, form.email, form.password)
+    const {user} = await signInWithEmailAndPassword(firebaseAuth, form.email, form.password)
+    return user;
 }
 
 async function registerUser(form){
@@ -34,4 +35,9 @@ async function registerUser(form){
     return registeredUser;
 }
 
-export { registerUser, logoutUser, loginUser }
+//type will be either string of "login" or "register". Depending on the type we will call either loginUser or registerUser
+function authenticate(form, type){
+    return type === "login" ? loginUser(form) : registerUser(form);
+}
+
+export { logoutUser, authenticate }

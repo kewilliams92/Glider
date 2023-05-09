@@ -18,6 +18,7 @@
 	});
 
 	export let onFormSubmit;
+	export let loading;
 </script>
 
 <form class="flex-it">
@@ -122,6 +123,7 @@
 		<div class="flex-it py-2">
 			<button
 				on:click={submitForm(onFormSubmit)}
+				disabled={loading}
 				type="button"
 				class="
                 bg-blue-400 hover:bg-blue-500 focus:ring-0
