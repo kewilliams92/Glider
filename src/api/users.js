@@ -1,5 +1,15 @@
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@db/index";
+
+async function fetchUsers(loggedInUser){
+    const usersQuery = query(
+        collection(db, "users"),
+        where("uid", "!=", loggedInUser.uid)
+    );
+    const usersSnap = await getDocs(usersQuery);
+
+    return usersSnap.docs.map(doc => doc.data());
+}
 
 async function getUser(uid){
     const docRef = doc(db, "users", uid);
@@ -7,4 +17,4 @@ async function getUser(uid){
     return docSnap.data();
 }
 
-export { getUser };
+export { getUser, fetchUsers };

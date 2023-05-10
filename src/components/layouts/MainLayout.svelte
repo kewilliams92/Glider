@@ -2,8 +2,12 @@
 
 	import NavSidebar from "@components/sidebars/NavSidebar.svelte";
 	import TrendsSidebar from "@components/sidebars/TrendsSidebar.svelte";
+	import { pageStore } from "@stores/pageStore";
 
+
+	const { title } = pageStore;
     export let trends;
+
 </script>
 <div class="w-full h-full bg-gray-900 text-gray-100">
 	<div class="flex h-full min-h-252">
@@ -17,7 +21,7 @@
 								<div
 									class="flex-it h-14 p-4 xl:text-xl text-sm font-bold z-10 backdrop-blur-md bg-opacity-70"
 								>
-									Home
+									{$title}
 								</div>
 							</div>
                             <slot />
