@@ -1,14 +1,20 @@
 
 import { db } from "@db/index"
-import { Timestamp, doc, collection, addDoc, getDocs, getDoc, query, orderBy, limit, startAfter } from "firebase/firestore"
+import { Timestamp, doc, collection, addDoc, getDocs, getDoc, query, orderBy, limit, startAfter, where } from "firebase/firestore"
 
-async function fetchGlides(lastGlideDoc){
+async function fetchGlides(lastGlideDoc, loggedInUser){
+    const _loggedInUserRef = doc(db, "users", loggedInUser.uid);
     const constraints = [
         orderBy("date", "desc"),
         limit(10)
     ];
 
-    console.log("last glide doc:" + lastGlideDoc?.id)
+    //if the user is following someone, we will get the glides of the people they are following
+    if(loggedInUser.following.length > 0){
+        constraints.push(where("user", "in", [...loggedInUser.following, _loggedInUserRef]))
+    } else {
+        constraints.push(where("user", "==", _loggedInUserRef))
+    }
 
     //whenever we call this function we will pass in the last glide document
     if(lastGlideDoc){
