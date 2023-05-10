@@ -1,33 +1,55 @@
-import { fetchGlides } from "@api/glides";
-import { onMount } from "svelte";
-import { writable } from "svelte/store"
+import { fetchGlides } from '@api/glides';
+import { onMount } from 'svelte';
+import { writable, get } from 'svelte/store';
 
-export function createGlideStore(){
-    const glides = writable([]);
-    const loading = writable(false);
+const FIRST_PAGE = 1;
 
-    onMount(loadGlides);
+export function createGlideStore() {
+	const pages = writable({ [FIRST_PAGE]: { glides: [] } });
+	const page = writable(FIRST_PAGE);
+	const loading = writable(false);
 
-    async function loadGlides(){
-        loading.set(true)
-        try{
-        const { glides: _glides } = await fetchGlides();
-        glides.set(_glides); //we will set our glides store to the glides we get back from our api call
-        console.log(_glides)
-        } catch(err){
-            console.log(err.message)
-        } finally {
-            loading.set(false)
-        }
-    }
+	let lastGlideDoc;
 
-    function addGlide(glide){
-        glides.update(list => [glide, ...list])
-    }
+	onMount(loadGlides);
 
-    return {
-        glides: { subscribe: glides.subscribe },
-        loading: { subscribe: loading.subscribe },
-        addGlide,
-    }
+	async function loadGlides() {
+		const _page = get(page);
+
+		//if we are on the first page and we have already loaded glides, we will not load any more glides
+		if (_page > 1 && !lastGlideDoc) return;
+
+		loading.set(true);
+		try {
+			const { glides, lastGlideDoc: _lastGlideDoc } = await fetchGlides(lastGlideDoc);
+
+			if (glides.length > 0) {
+                //if we have glides, we will update the pages object with the new glides
+				pages.update((_pages) => ({ ..._pages, [_page]: { glides } }));
+				//after each load we will update the page number, and add a new page to our pages object
+				page.update((_page) => _page + 1);
+			}
+
+			lastGlideDoc = _lastGlideDoc;
+		} catch (err) {
+			console.log(err.message);
+		} finally {
+			loading.set(false);
+		}
+	}
+
+	function addGlide(glide) {
+		//this is a function that will add a glide to the first page
+		pages.update((_pages) => {
+			_pages[FIRST_PAGE].glides.unshift(glide);
+			return _pages;
+		});
+	}
+
+	return {
+		pages: { subscribe: pages.subscribe },
+		loading: { subscribe: loading.subscribe },
+		addGlide,
+		loadGlides
+	};
 }

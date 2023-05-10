@@ -27,7 +27,6 @@
 			if(user) {
 				//we will get user from Firestore DB depending on the user uid
 				const gliderUser = await getUser(user.uid);
-				console.log(gliderUser)
 				auth.set({
 					isAuthenticated: true,
 					user: gliderUser

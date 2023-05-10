@@ -1,15 +1,27 @@
 
 import { db } from "@db/index"
-import { Timestamp, doc, collection, addDoc, getDocs, getDoc, query, orderBy, limit } from "firebase/firestore"
+import { Timestamp, doc, collection, addDoc, getDocs, getDoc, query, orderBy, limit, startAfter } from "firebase/firestore"
 
-async function fetchGlides(){
+async function fetchGlides(lastGlideDoc){
     const constraints = [
         orderBy("date", "desc"),
         limit(10)
     ];
+
+    console.log("last glide doc:" + lastGlideDoc?.id)
+
+    //whenever we call this function we will pass in the last glide document
+    if(lastGlideDoc){
+        constraints.push(startAfter(lastGlideDoc))
+    }
+
     //we will use our query helper function to get all of the glides from our glides collection
     const q = query(collection(db, "glides"), ...constraints);
     const qSnapShot = await getDocs(q);
+
+    //we will use the last glide document to get the next 10 glides
+    const _lastGlideDoc = qSnapShot.docs[qSnapShot.docs.length - 1];
+
 
     //We are using Promise.all to wait for all of our glides to be fetched
     const glides = await Promise.all(qSnapShot.docs.map(async doc => {
@@ -20,7 +32,7 @@ async function fetchGlides(){
         return {...glide, id: doc.id}
     }));
 
-    return { glides };
+    return { glides, lastGlideDoc: _lastGlideDoc };
 }
 
 async function createGlide(glideData){
