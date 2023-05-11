@@ -1,4 +1,4 @@
-import { fetchGlides } from '@api/glides';
+import { fetchGlides, onGlideSnapShot } from '@api/glides';
 import { onMount } from 'svelte';
 import { writable, get } from 'svelte/store';
 
@@ -7,11 +7,20 @@ const FIRST_PAGE = 1;
 export function createGlideStore(loggedInUser) {
 	const pages = writable({ [FIRST_PAGE]: { glides: [] } });
 	const page = writable(FIRST_PAGE);
+	const freshGlides = writable([]);
 	const loading = writable(false);
 
 	let lastGlideDoc;
+	let unsub;
 
-	onMount(loadGlides);
+	onMount(() => {
+		loadGlides();
+		subscribeToNewGlides();
+
+		return () => {
+			unsubscribeFromNewGlides();
+		}
+	});
 
 	async function loadGlides() {
 		const _page = get(page);
@@ -24,7 +33,7 @@ export function createGlideStore(loggedInUser) {
 			const { glides, lastGlideDoc: _lastGlideDoc } = await fetchGlides(lastGlideDoc, loggedInUser);
 
 			if (glides.length > 0) {
-                //if we have glides, we will update the pages object with the new glides
+				//if we have glides, we will update the pages object with the new glides
 				pages.update((_pages) => ({ ..._pages, [_page]: { glides } }));
 				//after each load we will update the page number, and add a new page to our pages object
 				page.update((_page) => _page + 1);
@@ -46,10 +55,44 @@ export function createGlideStore(loggedInUser) {
 		});
 	}
 
+	function subscribeToNewGlides() {
+		if (loggedInUser.length === 0) {
+			return;
+		}
+		unsub = onGlideSnapShot(loggedInUser, (newGlides) => {
+			freshGlides.set(newGlides);
+		});
+	}
+
+	function unsubscribeFromNewGlides() {
+		if (unsub) {
+			unsub();
+		}
+	}
+
+	function resubToGlides(){
+		unsubscribeFromNewGlides();
+		subscribeToNewGlides();
+	}
+
+	function displayFreshGlides(){
+		get(freshGlides).forEach(freshGlide => {
+			addGlide(freshGlide);
+		});
+
+		//after we have added all of the fresh glides to the first page, we will resubscribe to new glides
+		resubToGlides();
+		//all of the fresh glides have been added to the first page, so we will clear the fresh glides array
+		freshGlides.set([]);
+	}
+
 	return {
 		pages: { subscribe: pages.subscribe },
 		loading: { subscribe: loading.subscribe },
+		freshGlides: { subscribe: freshGlides.subscribe },
 		addGlide,
-		loadGlides
+		loadGlides,
+		subscribeToNewGlides,
+		displayFreshGlides
 	};
 }

@@ -42,6 +42,14 @@
 			loading = false;
 		}
 	}
+
+	//used for autosizing the glide textarea
+	function autosize(e){
+		const element = e.target;
+		element.style.height = "0px"; // reset height to 0 so that it doesn't keep growing
+		const { scrollHeight } = element;
+		element.style.height = scrollHeight + "px"; 
+	}
 </script>
 
 <div class="flex-it py-1 px-4 flex-row">
@@ -55,6 +63,7 @@
 		<div class="flex-it">
 			<textarea
 				bind:value={form.content}
+				on:input={autosize}
 				name="content"
 				rows="1"
 				id="glide"
