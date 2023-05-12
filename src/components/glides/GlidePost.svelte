@@ -3,6 +3,7 @@
 	import TiMessage from 'svelte-icons/ti/TiMessage.svelte';
 	import TiHeartOutline from 'svelte-icons/ti/TiHeartOutline.svelte';
 	import moment from 'moment';
+	import { goto } from '$app/navigation';
 
     export let glide;
 </script>
@@ -20,7 +21,10 @@
 				/>
 			</div>
 		</div>
-		<article class="flex-it flex-grow flex-shrink cursor-pointer">
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<article 
+		on:click={() => goto(`/${glide.uid}/glide/${glide.id}`)}
+		class="flex-it flex-grow flex-shrink cursor-pointer">
 			<div class="flex-it justify-center flex-grow mb-1">
 				<div class="flex-it justify-between flex-row w-full">
 					<div>

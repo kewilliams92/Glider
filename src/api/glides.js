@@ -11,7 +11,8 @@ import {
 	orderBy,
 	limit,
 	startAfter,
-	where
+	where,
+	setDoc
 } from 'firebase/firestore';
 
 async function getGlidesFromDocuments(qSnapShot){
@@ -21,7 +22,7 @@ async function getGlidesFromDocuments(qSnapShot){
             const userSnapshot = await getDoc(glide.user);
             glide.user = userSnapshot.data();
     
-            return {...glide, id: doc.id}
+            return {...glide, id: doc.id, lookup: doc.ref.path}
         }));
 }
 
@@ -40,6 +41,27 @@ function onGlideSnapShot(loggedInUser, callback) {
 		const glides = await getGlidesFromDocuments(qSnapshot);
 		callback(glides);
 	});
+}
+
+async function fetchGlide(uid, id){
+	//first we will get the user document reference
+	const userDocRef = doc(db, 'users', uid);
+	const userGlideRef = doc(userDocRef, 'glides', id);
+	//then we will get the user glide document
+	const userGlideSnapshot = await getDoc(userGlideRef);
+	const userGlide = userGlideSnapshot.data();
+	//next we will get the glide document
+	const glideSnapshot = await getDoc(userGlide.lookup);
+	const userSnap = await getDoc(userDocRef);
+	//then we will create a glide object
+	const glide = { 
+		...glideSnapshot.data(),
+		user: userSnap.data(),
+		id: glideSnapshot.id,
+		lookup: glideSnapshot.ref.path
+	}
+	//finally we will return the glide object
+	return glide;
 }
 
 async function fetchGlides(lastGlideDoc, loggedInUser) {
@@ -86,7 +108,10 @@ async function createGlide(glideData) {
 	const glideCollection = collection(db, 'glides');
 	const addedGlide = await addDoc(glideCollection, glide);
 
-	return { ...glide, id: addedGlide.id };
+	const userGlideRef = doc(userRef, "glides", addedGlide.id);
+	await setDoc(userGlideRef, {lookup: addedGlide});
+
+	return { ...glide, id: addedGlide.id, lookup: addedGlide.path };
 }
 
-export { createGlide, fetchGlides, onGlideSnapShot };
+export { createGlide, fetchGlides, onGlideSnapShot, fetchGlide};
