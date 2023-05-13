@@ -27,6 +27,12 @@
 
 {#if loading}
 <CenterDataLoader/>
+{:else if pages[1].glides.length === 0}
+ <div class='flex-it'>
+    <div class='bg-yellow-500 mt-6 p-2 rounded-lg mx-4'>
+        No glides. Create a new glide!
+    </div>
+ </div>
 {/if}
 
 

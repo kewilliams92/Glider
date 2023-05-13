@@ -35,9 +35,33 @@ export function createSubglideStore() {
 		}
 	}
 
+	function addGlide(glide) {
+		//this is a function that will add a glide to the first page
+		pages.update((_pages) => {
+			_pages[FIRST_PAGE].glides.unshift(glide);
+			return _pages;
+		});
+	}
+
+	function resetPagination() {
+		pages.update(_pages => {
+			for(let i = 1; i <= Object.keys(_pages).length; i++){
+				_pages[i] ={
+					glides: []
+				}};
+			return _pages;
+		});
+
+		lastGlideDoc = null;
+		page.set(1);
+	};
+
 	return {
 		pages: { subscribe: pages.subscribe },
 		loading: { subscribe: loading.subscribe },
 		loadGlides,
+		addGlide,
+		resetPagination
 	};
+
 }

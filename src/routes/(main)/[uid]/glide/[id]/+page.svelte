@@ -8,18 +8,30 @@
     import BackButton from '@components/utils/BackButton.svelte';
     import { createSubglideStore } from '@stores/createSubglideStore';
 	import { onMount } from 'svelte';
+	import PaginatedGlides from '@components/glides/PaginatedGlides.svelte';
+	import { fetchGlide } from '@api/glides';
 
-    const { glide, loading, getGlide } = createGlideIdStore($page.params.uid, $page.params.id);
-    const { pages, loadGlides} = createSubglideStore();
+    const { glide, loading, getGlide, incrementSubglidesCount } = createGlideIdStore(async () => {
+        const _glide = await fetchGlide($page.params.uid, $page.params.id);
+        onGlideLoaded(_glide);
+        return _glide;
+    });
+    const { pages, loading: loadingSubglides, loadGlides, addGlide, resetPagination} = createSubglideStore();
 
     pageStore.title.set(BackButton);
 
-    onMount(async() => {
-        const _glide = await getGlide();
-        loadGlides(_glide.lookup);
-    });
+    $: {
+        if($glide && !$loading && $page.params.id !== $glide.id) {
+            getGlide();
+        }
+    }
 
-    $: console.log($pages)
+    onMount(getGlide);
+
+    function onGlideLoaded(glide) {
+        resetPagination();
+        loadGlides(glide.lookup);
+    }
 
 </script>
 
@@ -34,7 +46,18 @@
  <Messenger 
  glideLookup={$glide.lookup}
  showAvatar={false} 
- onGlidePosted={() => {}} 
+ onGlidePosted={(glide) => {
+    addGlide(glide);
+    incrementSubglidesCount();
+ }} 
  />
  </div>
+
+ <PaginatedGlides 
+    pages={$pages}
+    loading={$loadingSubglides}
+    loadMoreGlides={() => {
+        loadGlides($glide.lookup)
+    }}
+ />
 {/if}

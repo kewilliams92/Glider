@@ -12,7 +12,9 @@ import {
 	limit,
 	startAfter,
 	where,
-	setDoc
+	setDoc,
+	updateDoc,
+	increment
 } from 'firebase/firestore';
 
 async function getGlidesFromDocuments(qSnapShot) {
@@ -73,14 +75,19 @@ async function fetchSubglides(lastGlideDoc, glideLookup) {
 
 	const constraints = [orderBy('date', 'desc'), limit(10)];
 
+	if (lastGlideDoc) {
+		constraints.push(startAfter(lastGlideDoc));
+	}
+
 	const q = query(glidesCollection, ...constraints);
 
 	const qSnapShot = await getDocs(q);
+	const _lastGlideDoc = qSnapShot.docs[qSnapShot.docs.length - 1];
 	const glides = await getGlidesFromDocuments(qSnapShot);
 
 	return {
 		glides,
-		lastGlide: null
+		lastGlideDoc: _lastGlideDoc
 	};
 }
 
@@ -140,6 +147,13 @@ async function createGlide(glideData, glideLookup) {
 	//we will use our collection helper function to add a glide to our glides collection
 	const glideCollection = getGlideCollection(glideLookup);
 	const addedGlide = await addDoc(glideCollection, glide);
+
+	if(glideLookup) {
+		const ref = doc(db, glideLookup);
+		await updateDoc(ref, {
+			subglidesCount: increment(1)
+		})
+	}
 
 	const userGlideRef = doc(userRef, 'glides', addedGlide.id);
 	await setDoc(userGlideRef, { lookup: addedGlide });

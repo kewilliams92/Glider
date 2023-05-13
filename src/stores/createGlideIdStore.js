@@ -1,16 +1,19 @@
-import { fetchGlide } from "@api/glides";
-import { writable } from "svelte/store"
+import {  writable } from "svelte/store"
 
-export function createGlideIdStore(uid, id){
+export function createGlideIdStore(getData){
     const glide = writable(null);
     const loading = writable(true);
 
     async function getGlide(){
-
-        const _glide = await fetchGlide(uid, id);
+        loading.set(true);
+        const _glide = await getData();
         loading.set(false);
         glide.set(_glide);
         return _glide;
+    }
+
+    function incrementSubglidesCount(){
+        glide.update(_glide => ({..._glide, subglidesCount: _glide.subglidesCount + 1}))
     }
 
     return {
@@ -20,6 +23,7 @@ export function createGlideIdStore(uid, id){
         loading: {
             subscribe: loading.subscribe
         },
-        getGlide
+        getGlide,
+        incrementSubglidesCount
     }
 }
