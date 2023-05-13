@@ -8,6 +8,8 @@
 	const { addSnackbar } = getUIContext();
 
 	export let onGlidePosted;
+	export let showAvatar = true;
+	export let glideLookup = null;
 
 	let form = { content: ""};
 	let loading = false;
@@ -27,7 +29,7 @@
 		//try/catch block to catch errors
 		try{
 		//our firestore api for creating a glide
-		const glide = await createGlide(glideData);
+		const glide = await createGlide(glideData, glideLookup);
 		const userData ={
 			nickName: user.nickName,
 			avatar: user.avatar,
@@ -53,11 +55,13 @@
 </script>
 
 <div class="flex-it py-1 px-4 flex-row">
+	{#if showAvatar}
 	<div class="flex-it mr-4">
 		<div class="w-12 h-12 overflow-visible cursor-pointer transition duration-200 hover:opacity-80">
 			<img alt="" class="rounded-full" src={user?.avatar} />
 		</div>
 	</div>
+	{/if}
 	<!-- MESSENGER START -->
 	<div class="flex-it flex-grow">
 		<div class="flex-it">

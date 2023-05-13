@@ -1,18 +1,40 @@
 <script>
     import {page} from '$app/stores';
-    import { onMount } from 'svelte';
-    import { fetchGlide } from '@api/glides';
+	import GlidePost from '@components/glides/GlidePost.svelte';
+	import CenterDataLoader from '@components/utils/CenterDataLoader.svelte';
+	import Messenger from '@components/utils/Messenger.svelte';
+	import { createGlideIdStore } from '@stores/createGlideIdStore';
+	import { pageStore } from '@stores/pageStore';
+    import BackButton from '@components/utils/BackButton.svelte';
+    import { createSubglideStore } from '@stores/createSubglideStore';
+	import { onMount } from 'svelte';
 
-    onMount(async () => {
-        const glide = fetchGlide($page.params.uid, $page.params.id)
-        console.log(glide)
-    })
+    const { glide, loading, getGlide } = createGlideIdStore($page.params.uid, $page.params.id);
+    const { pages, loadGlides} = createSubglideStore();
+
+    pageStore.title.set(BackButton);
+
+    onMount(async() => {
+        const _glide = await getGlide();
+        loadGlides(_glide.lookup);
+    });
+
+    $: console.log($pages)
+
 </script>
 
-<div>
-    uid:{$page.params.uid}
-</div>
-
-<div>
-    id:{$page.params.id}
-</div>
+{#if $loading}
+ <CenterDataLoader />
+ {:else if $glide}
+ <GlidePost glide={$glide} />
+ <div class="p-4 border-b-1 border-solid border-gray-700">
+    <div class="text-sm italic text-gray-300 underline mb-2">
+        Replying to: {$glide.user.nickName}
+    </div>
+ <Messenger 
+ glideLookup={$glide.lookup}
+ showAvatar={false} 
+ onGlidePosted={() => {}} 
+ />
+ </div>
+{/if}
