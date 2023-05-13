@@ -7,7 +7,7 @@
 	import { pageStore } from '@stores/pageStore';
     import BackButton from '@components/utils/BackButton.svelte';
     import { createSubglideStore } from '@stores/createSubglideStore';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import PaginatedGlides from '@components/glides/PaginatedGlides.svelte';
 	import { fetchGlide } from '@api/glides';
 
@@ -19,6 +19,7 @@
     const { pages, loading: loadingSubglides, loadGlides, addGlide, resetPagination} = createSubglideStore();
 
     pageStore.title.set(BackButton);
+    pageStore.onGlidePosted.set(addGlide)
 
     $: {
         if($glide && !$loading && $page.params.id !== $glide.id) {
@@ -27,10 +28,14 @@
     }
 
     onMount(getGlide);
+    onDestroy(() => {
+        pageStore.activeGlide.set(null);
+    });
 
     function onGlideLoaded(glide) {
         resetPagination();
         loadGlides(glide.lookup);
+        pageStore.activeGlide.set({...glide})
     }
 
 </script>
