@@ -1,5 +1,5 @@
 <script>
-	import { createGlide } from '@api/glides';
+	import { createGlide, uploadImage } from '@api/glides';
 	import { getUIContext } from '@components/context/UI';
 	import { getAuthContext } from '@components/context/auth';
 	import TiImageOutline from 'svelte-icons/ti/TiImageOutline.svelte';
@@ -12,6 +12,7 @@
 	export let glideLookup = null;
 
 	let form = { content: ""};
+	let image = {buffer: new ArrayBuffer(0), name: "", previewUrl: ""}
 	let loading = false;
 
 	$: user = $auth?.user; //get user from auth store
@@ -28,6 +29,10 @@
 
 		//try/catch block to catch errors
 		try{
+			if(image.buffer.byteLength > 0){
+			const downloadUrl = await uploadImage(image)
+			glideData.mediaUrl = downloadUrl;
+		}
 		//our firestore api for creating a glide
 		const glide = await createGlide(glideData, glideLookup);
 		const userData ={
@@ -38,10 +43,32 @@
 		onGlidePosted({...glide, user: userData});
 		addSnackbar('Glide created', 'success');
 		form.content = "";
+		image = {buffer: new ArrayBuffer(0), name: "", previewUrl: ""}
 		}catch(e){
 			addSnackbar(e.message, 'error');
 		} finally {
 			loading = false;
+		}
+	}
+
+	function handleImageSelection(e){
+		const file = e.target.files[0];
+		const reader = new FileReader();
+		reader.readAsArrayBuffer(file);
+
+		reader.onload = () => {
+			const buffer = reader.result;//we need this in order to deploy our image to firebase storage
+			const bufferUint8 = new Uint8Array(buffer);
+
+			const blob = new Blob([bufferUint8], {type: file.type}); //we need this in order to deploy our image to firebase storage
+			const urlCreator = window.URL || window.webkitURL;
+			const previewUrl = urlCreator.createObjectURL(blob);
+
+			image ={
+				buffer,
+				name: file.name,
+				previewUrl
+			}
 		}
 	}
 
@@ -75,13 +102,21 @@
 				placeholder={"What's new?"}
 			/>
 		</div>
+		{#if image.previewUrl.length > 0}
+			<div class="flex-it max-w-52 p-4">
+				<img src={image.previewUrl} alt="" class="w-full" />
+			</div>
+		{/if}
 		<div class="flex-it mb-1 flex-row xs:justify-between items-center">
 			<div class="flex-it mt-3 mr-3 cursor-pointer text-white hover:text-blue-400 transition">
 				<div class="upload-btn-wrapper">
 					<div class="icon">
 						<TiImageOutline />
 					</div>
-					<input type="file" name="myfile" />
+					<input 
+					on:change={handleImageSelection}
+					type="file" 
+					name="myfile" />
 				</div>
 			</div>
 			<div class="flex-it w-32 mt-3 cursor-pointer">

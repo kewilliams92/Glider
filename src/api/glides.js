@@ -16,6 +16,7 @@ import {
 	updateDoc,
 	increment
 } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 
 async function getGlidesFromDocuments(qSnapShot) {
 	//We are using Promise.all to wait for all of our glides to be fetched
@@ -28,6 +29,16 @@ async function getGlidesFromDocuments(qSnapShot) {
 			return { ...glide, id: doc.id, lookup: doc.ref.path };
 		})
 	);
+}
+
+//we will use this function to upload our image to firebase storage
+async function uploadImage(image) {
+	const storage = getStorage();
+	const storageRef = ref(storage, image.name);
+
+	const uploadResult = await uploadBytes(storageRef, image.buffer);
+	const downloadUrl = await getDownloadURL(uploadResult.ref);
+	return downloadUrl;
 }
 
 function onGlideSnapShot(loggedInUser, callback) {
@@ -71,7 +82,7 @@ async function fetchGlide(uid, id) {
 async function fetchSubglides(lastGlideDoc, glideLookup) {
 	//first we will get the glide document reference
 	const ref = doc(db, glideLookup);
-	const glidesCollection = collection(ref, "glides");
+	const glidesCollection = collection(ref, 'glides');
 
 	const constraints = [orderBy('date', 'desc'), limit(10)];
 
@@ -148,11 +159,11 @@ async function createGlide(glideData, glideLookup) {
 	const glideCollection = getGlideCollection(glideLookup);
 	const addedGlide = await addDoc(glideCollection, glide);
 
-	if(glideLookup) {
+	if (glideLookup) {
 		const ref = doc(db, glideLookup);
 		await updateDoc(ref, {
 			subglidesCount: increment(1)
-		})
+		});
 	}
 
 	const userGlideRef = doc(userRef, 'glides', addedGlide.id);
@@ -161,4 +172,4 @@ async function createGlide(glideData, glideLookup) {
 	return { ...glide, id: addedGlide.id, lookup: addedGlide.path };
 }
 
-export { createGlide, fetchGlides, onGlideSnapShot, fetchGlide, fetchSubglides };
+export { createGlide, fetchGlides, onGlideSnapShot, fetchGlide, fetchSubglides, uploadImage };

@@ -8,13 +8,13 @@ export function createSubglideStore() {
 	const page = writable(FIRST_PAGE);
 	const loading = writable(false);
 
-	let lastGlideDoc;
+	let lastGlideDoc = null;
 
 	async function loadGlides(glideLookup) {
 		const _page = get(page);
 
 		//if we are on the first page and we have already loaded glides, we will not load any more glides
-		if (_page > 1 && !lastGlideDoc) return;
+		if (typeof lastGlideDoc === "undefined") return;
 
 		loading.set(true);
 		try {
